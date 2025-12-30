@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Engineering Roadmap | Unified Data Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+        }
+        body {
+            background-color: var(--bg);
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .month-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .month-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .week-item {
+            border-left: 2px solid #334155;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .week-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-out;
+        }
+        .checkbox-custom:checked + label {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <div class="bg-indigo-600 p-2 rounded-lg">
+                    <i class="fas fa-brain text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">Sustainable<span class="text-indigo-400">AI</span></span>
+            </div>
+
+            <!-- User Switcher UI -->
+            <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <select id="user-selector" onchange="switchUser(this.value)" class="bg-transparent text-sm font-medium px-3 py-1 outline-none border-none cursor-pointer">
+                    <!-- User options injected here -->
+                </select>
+                <button onclick="addNewUser()" class="p-1 px-2 text-indigo-400 hover:text-indigo-300 transition-colors" title="Add User">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-6 text-sm font-medium">
+                <div class="flex flex-col items-end">
+                    <span class="text-xs text-slate-400">Current Progress</span>
+                    <div class="w-48 h-2 bg-slate-700 rounded-full mt-1">
+                        <div id="overall-progress" class="h-full bg-indigo-500 rounded-full w-0 progress-bar-fill"></div>
+                    </div>
+                </div>
+                <span id="progress-percent" class="text-indigo-400">0%</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- Hero Section -->
+        <section class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6">
+                Master <span class="gradient-text">AI Engineering</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-8">
+                Welcome, <span id="display-username" class="text-indigo-300 font-semibold">User</span>! All your progress is stored in a single JSON profile.
+            </p>
+            
+            <!-- Storage Controls -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button onclick="exportAllData()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20">
+                    <i class="fas fa-download"></i> Save All to JSON
+                </button>
+                <label class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">
+                    <i class="fas fa-upload text-indigo-400"></i> Load from JSON
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importAllData(event)">
+                </label>
+                <button onclick="resetCurrentUserProgress()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-red-900/20 border border-slate-700 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 transition-colors">
+                    <i class="fas fa-undo"></i> Reset Current Week
+                </button>
+                <button onclick="deleteCurrentUser()" id="delete-user-btn" class="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 border border-red-900/30 rounded-lg text-sm font-medium text-red-400 transition-colors">
+                    <i class="fas fa-user-minus"></i> Delete Profile
+                </button>
+            </div>
+        </section>
+
+        <!-- Roadmap Grid -->
+        <div id="roadmap-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Data is injected here by JS -->
+        </div>
+
+    </main>
+
+    <footer class="border-t border-slate-800 mt-20 py-10 text-center text-slate-500 text-sm">
+        <p>© 2024 AI Engineering Roadmap. Store your journey, master your future.</p>
+    </footer>
+
+    <!-- Custom Modal for Adding User -->
+    <div id="user-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Create New Profile</h3>
+            <p class="text-slate-400 text-sm mb-6">Enter a name for the new learning profile.</p>
+            <input type="text" id="new-user-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white mb-6 outline-none focus:border-indigo-500" placeholder="e.g. Student Name">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                <button onclick="confirmAddUser()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const roadmapData = [
+            {
+                month: 1,
+                title: "Python, Git & Engineering Basics",
+                weeks: [
+                    { title: "Week 1: Python Fundamentals", tasks: ["Variables, data types, loops", "Logic building", "Error message reading"], build: "Basic calculator, number guessing game" },
+                    { title: "Week 2: Functions & Data Structures", tasks: ["Functions & Scope", "Lists, Dictionaries, Tuples", "Clean code principles"], build: "Student marks analyzer, to-do list app" },
+                    { title: "Week 3: Writing Real Python Code", tasks: ["Modules & File handling", "Exceptions & Debugging", "Task automation"], build: "File organizer or CSV processing script" },
+                    { title: "Week 4: Git, GitHub & Collaboration", tasks: ["Version control basics", "Add, Commit, Push, Pull", "README writing"], build: "Push all Month-1 projects to GitHub" }
+                ]
+            },
+            {
+                month: 2,
+                title: "Data, Text & Embeddings Foundations",
+                weeks: [
+                    { title: "Week 5: Data Handling with Pandas", tasks: ["Loading CSV/Excel", "Filter, Sort, Group", "Exploratory analysis"], build: "Analyze a small real dataset" },
+                    { title: "Week 6: Data Cleaning & Prep", tasks: ["Missing values & Duplicates", "Feature engineering", "Scaling & Normalization"], build: "Clean and prepare a messy dataset" },
+                    { title: "Week 7: Text Processing Basics", tasks: ["Unstructured data concepts", "Tokenization & Lemmatization", "NLP pipelines"], build: "Text cleaning pipeline" },
+                    { title: "Week 8: Embeddings & Similarity", tasks: ["Embedding intuition", "Cosine similarity", "Semantic search"], build: "Text similarity search tool" }
+                ]
+            },
+            {
+                month: 3,
+                title: "Machine Learning Foundations",
+                weeks: [
+                    { title: "Week 9: ML Basics & Framing", tasks: ["Supervised vs Unsupervised", "Training vs Testing data", "Problem framing"], build: "ML problem definition document" },
+                    { title: "Week 10: Core ML Models", tasks: ["Linear/Logistic Regression", "KNN & Decision Trees", "Scikit-learn training"], build: "House price or classification model" },
+                    { title: "Week 11: Model Evaluation", tasks: ["Accuracy, Precision, Recall", "Confusion matrices", "Cross-validation"], build: "Model evaluation report" },
+                    { title: "Week 12: ML Best Practices", tasks: ["Overfitting/Underfitting", "Bias-variance tradeoff", "Hyperparameter tuning"], build: "Final ML mini-project (End-to-end)" }
+                ]
+            },
+            {
+                month: 4,
+                title: "Generative AI & Prompt Engineering",
+                weeks: [
+                    { title: "Week 13: LLM Fundamentals", tasks: ["Tokens & Context windows", "Inference & Limitations", "Chatbot logic"], build: "Simple chatbot" },
+                    { title: "Week 14: Prompt Engineering", tasks: ["Role-based & Few-shot", "Structured outputs", "Iteration techniques"], build: "Prompt-based summarizer" },
+                    { title: "Week 15: Using GenAI APIs", tasks: ["OpenAI & Hugging Face", "Rate limits & Costs", "API error handling"], build: "Resume reviewer or content generator" },
+                    { title: "Week 16: Responsible AI", tasks: ["Hallucinations & Bias", "Prompt injection", "Guardrails"], build: "Safer chatbot with constraints" }
+                ]
+            },
+            {
+                month: 5,
+                title: "RAG, Vector Stores & Frameworks",
+                weeks: [
+                    { title: "Week 17: RAG Fundamentals", tasks: ["RAG Architecture", "Chunking strategies", "Context retrieval"], build: "Document chunking pipeline" },
+                    { title: "Week 18: Vector Databases", tasks: ["Storage & Search", "Similarity queries", "Index management"], build: "Vector search system" },
+                    { title: "Week 19: Building RAG Systems", tasks: ["Context injection", "Evaluation of retrieval", "End-to-end RAG"], build: "Document Q&A bot" },
+                    { title: "Week 20: AI Frameworks & Agents", tasks: ["LangChain/Semantic Kernel", "Agent concepts", "SmolAgents/CrewAI"], build: "Multi-step AI workflow" }
+                ]
+            },
+            {
+                month: 6,
+                title: "Agentic Systems & Production",
+                weeks: [
+                    { title: "Week 21: Agentic Workflows", tasks: ["Planning & Reasoning", "Tool calling", "Agent necessity"], build: "Agent-driven task automation" },
+                    { title: "Week 22: Evaluation & Optimization", tasks: ["Output evaluation", "Cost & Latency", "Caching strategies"], build: "Evaluation & cost analysis report" },
+                    { title: "Week 23: Production Readiness", tasks: ["Logging & Monitoring", "Prompt versioning", "Deployment basics"], build: "Production-ready AI service" },
+                    { title: "Week 24: Capstone Project", tasks: ["System design", "Full documentation", "Architecture diagrams"], build: "Final AI Engineer capstone + Demo" }
+                ]
+            }
+        ];
+
+        // --- UNIFIED DATA STRUCTURE ---
+        // {
+        //   currentUser: "Name",
+        //   users: ["Name 1", "Name 2"],
+        //   progress: { "Name 1": { weekId: true }, "Name 2": { weekId: false } }
+        // }
+
+        let appState = {
+            currentUser: 'Default User',
+            users: ['Default User'],
+            progress: { 'Default User': {} }
+        };
+
+        function initApp() {
+            const savedState = localStorage.getItem('ai_roadmap_app_state');
+            if (savedState) {
+                try {
+                    appState = JSON.parse(savedState);
+                } catch (e) {
+                    console.error("Failed to parse app state", e);
+                }
+            }
+            
+            updateUserUI();
+            renderRoadmap();
+        }
+
+        function saveState() {
+            localStorage.setItem('ai_roadmap_app_state', JSON.stringify(appState));
+        }
+
+        function updateUserUI() {
+            const selector = document.getElementById('user-selector');
+            selector.innerHTML = appState.users.map(u => 
+                `<option value="${u}" ${u === appState.currentUser ? 'selected' : ''}>${u}</option>`
+            ).join('');
+            
+            document.getElementById('display-username').innerText = appState.currentUser;
+            document.getElementById('delete-user-btn').style.display = appState.users.length > 1 ? 'flex' : 'none';
+        }
+
+        function switchUser(userName) {
+            appState.currentUser = userName;
+            saveState();
+            updateUserUI();
+            renderRoadmap();
+        }
+
+        function addNewUser() {
+            document.getElementById('user-modal').style.display = 'flex';
+            document.getElementById('new-user-name').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('user-modal').style.display = 'none';
+            document.getElementById('new-user-name').value = '';
+        }
+
+        function confirmAddUser() {
+            const name = document.getElementById('new-user-name').value.trim();
+            if (name && !appState.users.includes(name)) {
+                appState.users.push(name);
+                appState.progress[name] = {};
+                appState.currentUser = name;
+                saveState();
+                closeModal();
+                updateUserUI();
+                renderRoadmap();
+            } else if (appState.users.includes(name)) {
+                alert('This profile name already exists!');
+            }
+        }
+
+        function deleteCurrentUser() {
+            if (appState.users.length <= 1) return;
+            if (confirm(`Delete profile "${appState.currentUser}"? All progress for this user will be lost.`)) {
+                const userToDelete = appState.currentUser;
+                appState.users = appState.users.filter(u => u !== userToDelete);
+                delete appState.progress[userToDelete];
+                appState.currentUser = appState.users[0];
+                saveState();
+                updateUserUI();
+                renderRoadmap();
+            }
+        }
+
+        function renderRoadmap() {
+            const container = document.getElementById('roadmap-container');
+            const userProgress = appState.progress[appState.currentUser] || {};
+            
+            container.innerHTML = roadmapData.map((monthData, mIdx) => `
+                <div class="month-card bg-slate-800/50 border border-slate-700 rounded-2xl p-6 flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Month ${monthData.month}</span>
+                            <h2 class="text-2xl font-bold mt-1">${monthData.title}</h2>
+                        </div>
+                        <div class="bg-slate-900 rounded-full px-3 py-1 text-xs text-slate-400">
+                            ${monthData.weeks.length} Weeks
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-8 flex-grow">
+                        ${monthData.weeks.map((week, wIdx) => {
+                            const weekId = `m${mIdx}-w${wIdx}`;
+                            const isChecked = userProgress[weekId] || false;
+                            return `
+                                <div class="week-item">
+                                    <div class="flex items-start gap-3">
+                                        <input type="checkbox" id="${weekId}" class="checkbox-custom mt-1.5 w-5 h-5 rounded border-slate-600 bg-slate-700 text-indigo-600 focus:ring-indigo-500" 
+                                            ${isChecked ? 'checked' : ''} onchange="toggleWeek('${weekId}')">
+                                        <div class="flex-1">
+                                            <label for="${weekId}" class="block font-bold text-slate-100 cursor-pointer">
+                                                ${week.title}
+                                            </label>
+                                            <ul class="mt-2 space-y-1">
+                                                ${week.tasks.map(task => `
+                                                    <li class="text-sm text-slate-400 flex items-center gap-2">
+                                                        <span class="w-1 h-1 bg-slate-500 rounded-full"></span>
+                                                        ${task}
+                                                    </li>
+                                                `).join('')}
+                                            </ul>
+                                            <div class="mt-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3">
+                                                <p class="text-xs font-semibold text-indigo-300 uppercase tracking-tighter mb-1">Weekly Build</p>
+                                                <p class="text-sm text-indigo-100">${week.build}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            updateProgressCounters();
+        }
+
+        function toggleWeek(id) {
+            if (!appState.progress[appState.currentUser]) {
+                appState.progress[appState.currentUser] = {};
+            }
+            appState.progress[appState.currentUser][id] = document.getElementById(id).checked;
+            saveState();
+            updateProgressCounters();
+        }
+
+        function updateProgressCounters() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const percentage = total > 0 ? Math.round((checked / total) * 100) : 0;
+            
+            document.getElementById('overall-progress').style.width = `${percentage}%`;
+            document.getElementById('progress-percent').innerText = `${percentage}%`;
+        }
+
+        function resetCurrentUserProgress() {
+            if(confirm(`Reset all progress for ${appState.currentUser}?`)) {
+                appState.progress[appState.currentUser] = {};
+                saveState();
+                renderRoadmap();
+            }
+        }
+
+        // --- JSON DATA HANDLERS ---
+
+        function exportAllData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "ai_learning_roadmap_all_users.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    
+                    // Basic validation of the JSON structure
+                    if (importedState.users && Array.isArray(importedState.users) && importedState.progress) {
+                        appState = importedState;
+                        saveState();
+                        initApp(); // Refresh everything
+                        alert('All profiles and progress have been successfully loaded!');
+                    } else {
+                        throw new Error('Invalid structure');
+                    }
+                } catch (error) {
+                    alert('Invalid JSON file. Please ensure it is a valid AI Roadmap export.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Run on load
+        window.onload = initApp;
+    </script>
+</body>
+</html>
